@@ -1,13 +1,24 @@
 <?php
 class MessagesController extends AppController {
-    public $components = array('RequestHandler');
+   // public $components = array('RequestHandler');
+    public $components = ['Paginator', 'Security'];
 
+    public function beforeFilter() {
+        parent::beforeFilter();
+        $this->Security->unlockedActions = ['delete']; 
+    
+    }
+    
     public function index() {
-        $this->paginate = array(
+        $this->Paginator->settings = [
             'limit' => 10,
-            'order' => array('Message.created' => 'desc')
-        );
-        $messages = $this->paginate('Message');
+            'order' => ['Message.created' => 'desc'],
+            'contain' => [
+                'Conversation' => ['order' => ['Conversation.created' => 'asc']]
+            ]
+        ];
+
+        $messages = $this->Paginator->paginate('Message');
         $this->set(compact('messages'));
     }
 
@@ -27,21 +38,28 @@ class MessagesController extends AppController {
     }
 
     public function delete($id = null) {
-        $this->request->onlyAllow('post', 'ajax');
+    CakeLog::write('debug', "Delete method called with ID: $id");
 
-        $this->Message->id = $id;
-        if (!$this->Message->exists()) {
-            throw new NotFoundException('メッセージが存在しません');
-        }
-
-        // 子テーブルのConversationも削除する
-        $this->Message->Conversation->deleteAll(array('Conversation.message_id' => $id), false);
-
-        if ($this->Message->delete()) {
-            $this->set('result', 'success');
-        } else {
-            $this->set('result', 'fail');
-        }
-        $this->set('_serialize', array('result'));
+    if (!$this->request->is('post') && !$this->request->is('delete')) {
+        throw new MethodNotAllowedException();
     }
+
+    $this->Message->id = $id;
+    if (!$this->Message->exists()) {
+        throw new NotFoundException(__('Invalid message'));
+    }
+
+    if ($this->Message->delete()) {
+        CakeLog::write('debug', "Message $id deleted");
+    } else {
+        CakeLog::write('debug', "Failed to delete message $id");
+    }
+
+    return $this->redirect(array('action' => 'index'));
 }
+
+}
+
+
+
+

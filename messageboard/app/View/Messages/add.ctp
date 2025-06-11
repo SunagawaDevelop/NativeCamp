@@ -4,3 +4,4 @@
     echo $this->Form->input('content', array('label' => '内容', 'type' => 'textarea'));
     echo $this->Form->end('投稿');
 ?>
+

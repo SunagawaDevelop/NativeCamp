@@ -1,31 +1,54 @@
+<?php if (isset($csrfToken)): ?>
+    <meta name="csrf-token" content="<?php echo h($csrfToken); ?>">
+<?php endif; ?>
+
+
+<?php echo $this->Form->create(null, ['type' => 'post']); ?>
+<?php echo $this->Form->end(); ?>
+
+
 <h2>掲示板</h2>
-<?php echo $this->Html->link('新規メッセージを追加', array('action' => 'add'), array('class' => 'button')); ?>
+
+<p><?php echo $this->Html->link('新規メッセージ', ['action' => 'add']); ?></p>
+
 <div id="message-list">
 <?php foreach ($messages as $message): ?>
     <div class="message" id="message-<?php echo $message['Message']['id']; ?>">
-        <p><?php echo h($message['Message']['content']); ?></p>
+        <p><strong><?php echo h($message['Message']['content']); ?></strong></p>
         <p><small><?php echo h($message['Message']['created']); ?></small></p>
-        <button class="delete-button" data-id="<?php echo $message['Message']['id']; ?>">削除</button>
+
+        <p>
+            <?php echo $this->Html->link('削除', '#', [
+                'class' => 'delete-message',
+                'data-id' => $message['Message']['id']
+            ]); ?>
+        </p>
+
+        <div class="conversations">
+            <?php foreach ($message['Conversation'] as $conversation): ?>
+                <div class="conversation">
+                    <p><?php echo h($conversation['content']); ?></p>
+                    <p><small><?php echo h($conversation['created']); ?></small></p>
+                </div>
+            <?php endforeach; ?>
+        </div>
+
+        <?php echo $this->Form->create('Conversation', [
+            'url' => ['controller' => 'conversations', 'action' => 'add'],
+            'class' => 'reply-form',
+            'inputDefaults' => ['label' => false]
+        ]); ?>
+            <?php echo $this->Form->hidden('message_id', ['value' => $message['Message']['id']]); ?>
+            <?php echo $this->Form->input('content', ['placeholder' => '返信を入力...']); ?>
+            <?php echo $this->Form->submit('返信'); ?>
+        <?php echo $this->Form->end(); ?>
     </div>
 <?php endforeach; ?>
 </div>
-<?php echo $this->Paginator->next('もっと見る...', array('escape' => false)); ?>
 
-<script>
-$(document).on('click', '.delete-button', function () {
-    var id = $(this).data('id');
-    var $row = $('#message-' + id);
+<!-- もっと見る -->
+<?php if ($this->Paginator->hasNext()): ?>
+    <p><a href="#" id="load-more" data-page="2">もっと見る</a></p>
+<?php endif; ?>
 
-    $.ajax({
-        url: '/messages/delete/' + id,
-        type: 'POST',
-        success: function (res) {
-            if (res.result === 'success') {
-                $row.fadeOut(400, function () { $(this).remove(); });
-            } else {
-                alert('削除に失敗しました');
-            }
-        }
-    });
-});
-</script>
+<?php echo $this->Html->script('board'); ?>

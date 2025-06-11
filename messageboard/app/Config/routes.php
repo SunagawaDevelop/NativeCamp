@@ -43,10 +43,11 @@
 	Router::connect('/profile', array('controller' => 'users', 'action' => 'profile'));
 	Router::connect('/messages', array('controller' => 'messages', 'action' => 'index'));
 	Router::connect('/messages/add', array('controller' => 'messages', 'action' => 'add'));
-	Router::connect('/messages/delete/*', array('controller' => 'messages', 'action' => 'delete'));
-
-
-
+	Router::connect(
+    	'/messages/delete/:id',
+    	array('controller' => 'messages', 'action' => 'delete'),
+    	array('pass' => array('id'), 'id' => '[0-9]+')
+	);
 /**
  * Load all plugin routes. See the CakePlugin documentation on
  * how to customize the loading of plugin routes.
@@ -58,3 +59,10 @@
  * the built-in default routes.
  */
 	require CAKE . 'Config' . DS . 'routes.php';
+
+	Router::mapResources('messages');
+
+	Router::resourceMap(array(
+    array('action' => 'delete', 'method' => 'DELETE', 'id' => true),
+));
+

@@ -1,6 +1,8 @@
 <?php
 $cakeDescription = __d('cake_dev', 'CakePHP: the rapid development php framework');
 $cakeVersion = __d('cake_dev', 'CakePHP %s', Configure::version()); // ← セミコロン追加
+echo $this->Html->css('style');
+
 ?>
 <!DOCTYPE html>
 <html>

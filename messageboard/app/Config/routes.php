@@ -66,3 +66,10 @@
     array('action' => 'delete', 'method' => 'DELETE', 'id' => true),
 ));
 
+	Router::connect('/profile_view', array('controller' => 'users', 'action' => 'profile_view'));
+
+	Router::connect(
+    '/messageboard/messages/add',
+    array('controller' => 'messages', 'action' => 'add')
+	);
+

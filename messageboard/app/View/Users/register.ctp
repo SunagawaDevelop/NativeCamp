@@ -1,13 +1,39 @@
-<h2>ユーザー登録</h2>
+<div class="register-form">
 
-<?php
-echo $this->Form->create('User', array('url' => array('controller' => 'users', 'action' => 'register')));
-echo $this->Form->input('name', array('label' => 'お名前'));
-echo $this->Form->input('email', array('label' => 'Email'));
-echo $this->Form->input('password', array('label' => 'パスワード'));
-echo $this->Form->input('password_confirm', array(
-    'label' => 'パスワード（確認）',
-    'type' => 'password'
-));
-echo $this->Form->end('登録');
-?>
+    <div class="form-row">
+        <label class="form-label form-title">User Registration</label>
+    </div>
+
+    <?php
+    echo $this->Form->create('User', array(
+        'url' => array('controller' => 'users', 'action' => 'register')
+    ));
+
+    echo '<div class="form-row">';
+    echo $this->Form->label('name', 'Name', array('class' => 'form-label'));
+    echo $this->Form->text('name', array('class' => 'form-input'));
+    echo '</div>';
+
+    echo '<div class="form-row">';
+    echo $this->Form->label('email', 'Email', array('class' => 'form-label'));
+    echo $this->Form->text('email', array('class' => 'form-input'));
+    echo '</div>';
+
+    echo '<div class="form-row">';
+    echo $this->Form->label('password', 'Password', array('class' => 'form-label'));
+    echo $this->Form->password('password', array('class' => 'form-input'));
+    echo '</div>';
+
+    echo '<div class="form-row">';
+    echo $this->Form->label('password_confirm', 'Confirm Password', array('class' => 'form-label'));
+    echo $this->Form->password('password_confirm', array('class' => 'form-input'));
+    echo '</div>';
+
+    echo '<div class="form-actions">';
+    echo $this->Form->end(array(
+        'label' => 'Register',
+        'class' => 'btn-register'
+    ));
+    echo '</div>';
+    ?>
+</div>

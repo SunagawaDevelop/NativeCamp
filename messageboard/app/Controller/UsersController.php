@@ -92,4 +92,39 @@ class UsersController extends AppController {
 
         $this->set('user', $this->User->read());
     }
+
+    public function profile_view() {
+        $user = $this->Auth->user();
+
+        if (!$user) {
+            $this->Session->setFlash('ログインが必要です。');
+            return $this->redirect(array('action' => 'login'));
+        }
+
+        $this->set('user', $this->User->findById($user['id']));
+    }
+
+    public function search() {
+        $this->autoRender = false;
+        $this->response->type('json');
+
+        $query = $this->request->query('q');
+
+        $users = $this->User->find('all', [
+            'conditions' => ['User.name LIKE' => '%' . $query . '%'],
+            'fields' => ['User.id', 'User.name'],
+            'limit' => 10
+        ]);
+
+        $result = [];
+        foreach ($users as $user) {
+            $result[] = [
+                'id' => $user['User']['id'],
+                'text' => $user['User']['name']
+            ];
+        }
+
+        echo json_encode(['results' => $result]);
+    }
+
 }

@@ -51,5 +51,14 @@ class AppController extends Controller {
             )
         )
     );
+
+    public function beforeRender() {
+        parent::beforeRender();
+
+        // セキュリティコンポーネントが有効な場合のみ
+        if (isset($this->Security)) {
+            $this->set('csrfToken', $this->request->params['_Token']['key']);
+        }
+    }
 }
 

@@ -38,6 +38,4 @@ class ConversationsController extends AppController {
 
         return $this->redirect($this->referer());
 }
-
-
 }

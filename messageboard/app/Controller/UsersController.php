@@ -7,7 +7,7 @@ class UsersController extends AppController {
     public function beforeFilter() {
         parent::beforeFilter();
          $this->Auth->allow('login', 'register'); 
-        $this->Auth->allow('login'); // loginは認証不要
+        $this->Auth->allow('login'); 
     }
 
     public function login() {
@@ -19,14 +19,13 @@ class UsersController extends AppController {
         ));
 
         if ($user && $user['User']['password'] === $this->request->data['User']['password']) {
-            // ログイン日時を更新
+
             $this->User->id = $user['User']['id'];
             $this->User->saveField('logindate', date('Y-m-d H:i:s'));
 
-            // ログイン処理
+
             $this->Auth->login($user['User']);
 
-            // マイページへリダイレクト
             return $this->redirect(array('controller' => 'users', 'action' => 'mypage'));
         } else {
             $loginResult = 'メールアドレスまたはパスワードが違います';
@@ -40,7 +39,7 @@ class UsersController extends AppController {
         return $this->redirect($this->Auth->logout());
     }
     public function mypage() {
-        $user = $this->Auth->user(); // ログイン中のユーザ情報
+        $user = $this->Auth->user(); 
         $this->set('user', $user);
     }
 
@@ -75,9 +74,8 @@ class UsersController extends AppController {
                 unset($data['User']['photo']);
             }
 
-            // hobbyを明示的に含めて保存（テキストエリアから送信される）
             if (isset($data['User']['hobby'])) {
-                $data['User']['hobby'] = trim($data['User']['hobby']); // 余分な空白を削除（任意）
+                $data['User']['hobby'] = trim($data['User']['hobby']);
             }
 
             if ($this->User->save($data)) {
@@ -126,5 +124,4 @@ class UsersController extends AppController {
 
         echo json_encode(['results' => $result]);
     }
-
 }

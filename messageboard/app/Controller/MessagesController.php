@@ -1,91 +1,90 @@
 <?php
 class MessagesController extends AppController {
-   // public $components = array('RequestHandler');
     public $components = ['Paginator', 'Security'];
 
     public function beforeFilter() {
         parent::beforeFilter();
-        $this->Security->unlockedActions = ['delete', 'add'];
+        $this->Security->unlockedActions = ['add', 'delete'];
+
+        $this->Auth->deny();
     }
 
-    
     public function index() {
+        
         $this->Paginator->settings = [
             'limit' => 10,
             'order' => ['Message.created' => 'desc'],
             'contain' => [
-                'Conversation' => ['order' => ['Conversation.created' => 'asc']]
+                'User', // ← 投稿者のプロフィール画像用
+                'Conversation' => [
+                    'order' => ['Conversation.created' => 'asc'],
+                    'User' // ← 会話投稿者のプロフィール画像用
+                ]
             ]
         ];
-
-        $messages = $this->Paginator->paginate('Message');
-        $this->set(compact('messages'));
+        
+        var_dump($this->Paginator->settings = [
+            'limit' => 10,
+            'order' => ['Message.created' => 'desc'],
+            'contain' => ['Conversation' => ['order' => ['Conversation.created' => 'asc']]]
+        ]);
+        $this->set('messages', $this->Paginator->paginate('Message'));
+        // ▼ ユーザー情報を取得し、ビューへ渡す（画像含む）
+        $userId = $this->Auth->user('id');
+        $currentUser = $this->Message->User->findById($userId);
+        $this->set('currentUser', $currentUser['User']);
+        $this->set('currentUser', $this->Auth->user()); 
     }
 
     public function add() {
-        $this->set('recipient', ['' => '']); // 初期は空でOK
+        $this->set('recipient', ['' => '']);
+        $this->set('currentUser', $this->Auth->user()); 
 
         if ($this->request->is('post')) {
             $this->Message->create();
-            $this->request->data['Message']['user_id'] = $this->Auth->user('id');
+            $data = $this->request->data;
+            $data['Message']['user_id'] = $this->Auth->user('id');
 
-            // recipient_id がある場合はユーザー情報を取得
-            if (!empty($this->request->data['Message']['recipient_id'])) {
-                $this->loadModel('User');
-                $recipient = $this->User->find('first', [
-                    'conditions' => ['User.id' => $this->request->data['Message']['recipient_id']],
+            if (!empty($data['Message']['recipient_id'])) {
+                $recipient = $this->Message->User->find('first', [
+                    'co
+                    ditions' => ['User.id' => $data['Message']['recipient_id']],
                     'fields' => ['User.name']
                 ]);
 
                 if (!empty($recipient)) {
-                    $recipientName = $recipient['User']['name'];
-                    // メッセージ内容の先頭に「宛先: ユーザー名」を追加
-                    $this->request->data['Message']['content'] = 'To: ' . $recipientName . "\n" . $this->request->data['Message']['content'];
+                    $data['Message']['content'] = 'To: ' . $recipient['User']['name'] . "\n" . $data['Message']['content'];
                 }
             }
 
-            if ($this->Message->save($this->request->data)) {
+            if ($this->Message->save($data)) {
                 $this->Session->setFlash('メッセージを投稿しました');
                 return $this->redirect(['action' => 'index']);
-            } else {
-                $this->Session->setFlash('投稿に失敗しました');
             }
+
+            $this->Session->setFlash('投稿に失敗しました');
         }
     }
 
-
     public function delete($id = null) {
-        CakeLog::write('debug', "Delete method called with ID: $id");
-
-        if (!$this->request->is('post') && !$this->request->is('delete')) {
+        if (!$this->request->is(['post', 'delete'])) {
             throw new MethodNotAllowedException();
         }
 
-        $this->Message->id = $id;
-        if (!$this->Message->exists()) {
+        if (!$this->Message->exists($id)) {
             throw new NotFoundException(__('Invalid message'));
         }
 
-        if ($this->Message->delete()) {
-            CakeLog::write('debug', "Message $id deleted");
-        } else {
-            CakeLog::write('debug', "Failed to delete message $id");
-        }
+        $result = $this->Message->delete($id);
+        CakeLog::write('debug', $result ? "Message $id deleted" : "Failed to delete message $id");
 
         if ($this->request->is('ajax')) {
             $this->autoRender = false;
             $this->response->type('json');
-            echo json_encode(['status' => 'success']);
+            echo json_encode(['status' => $result ? 'success' : 'error']);
             return;
         }
 
         return $this->redirect(['action' => 'index']);
-
-
-        }
-
+    }
 }
-
-
-
-

@@ -7,7 +7,7 @@ class UsersController extends AppController {
     public function beforeFilter() {
         parent::beforeFilter();
          $this->Auth->allow('login', 'register'); 
-        $this->Auth->allow('login'); // loginは認証不要
+        $this->Auth->allow('login'); 
     }
 
     public function login() {
@@ -18,29 +18,36 @@ class UsersController extends AppController {
             'conditions' => array('User.email' => $this->request->data['User']['email'])
         ));
 
-        if ($user && $user['User']['password'] === $this->request->data['User']['password']) {
-            // ログイン日時を更新
-            $this->User->id = $user['User']['id'];
-            $this->User->saveField('logindate', date('Y-m-d H:i:s'));
+        if ($user) {
 
-            // ログイン処理
-            $this->Auth->login($user['User']);
+            App::uses('SimplePasswordHasher', 'Controller/Component/Auth');
+            $hasher = new SimplePasswordHasher();
+            $inputPassword = $this->request->data['User']['password'];
 
-            // マイページへリダイレクト
-            return $this->redirect(array('controller' => 'users', 'action' => 'mypage'));
-        } else {
-            $loginResult = 'メールアドレスまたはパスワードが違います';
+            if ($hasher->check($inputPassword, $user['User']['password'])) {
+                $now = date('Y-m-d H:i:s');
+                $this->User->id = $user['User']['id'];
+                $this->User->saveField('logindate', $now);
+
+                $user['User']['logindate'] = $now;
+                $this->Auth->login($user['User']);
+
+                return $this->redirect(array('controller' => 'users', 'action' => 'mypage'));
+            }
         }
+
+        $loginResult = 'メールアドレスまたはパスワードが違います';
     }
 
     $this->set('loginResult', $loginResult);
 }
 
+
     public function logout() {
         return $this->redirect($this->Auth->logout());
     }
     public function mypage() {
-        $user = $this->Auth->user(); // ログイン中のユーザ情報
+        $user = $this->Auth->user(); 
         $this->set('user', $user);
     }
 
@@ -62,47 +69,51 @@ class UsersController extends AppController {
         $user = $this->Auth->user();
         $this->User->id = $user['id'];
 
+        // DBから最新のユーザーデータを取得
+        $userData = $this->User->read();
+        $this->set('user', $userData['User']);
+
         if ($this->request->is('post') || $this->request->is('put')) {
             $data = $this->request->data;
 
-            if (!empty($this->request->data['User']['photo']['name'])) {
-                $filename = time() . '_' . $this->request->data['User']['photo']['name'];
+            if (!empty($data['User']['photo']['name'])) {
+                $filename = time() . '_' . $data['User']['photo']['name'];
                 $path = WWW_ROOT . 'img' . DS . 'uploads' . DS . $filename;
-
-                move_uploaded_file($this->request->data['User']['photo']['tmp_name'], $path);
+                move_uploaded_file($data['User']['photo']['tmp_name'], $path);
                 $data['User']['photo'] = 'uploads/' . $filename;
             } else {
                 unset($data['User']['photo']);
             }
 
-            // hobbyを明示的に含めて保存（テキストエリアから送信される）
             if (isset($data['User']['hobby'])) {
-                $data['User']['hobby'] = trim($data['User']['hobby']); // 余分な空白を削除（任意）
+                $data['User']['hobby'] = trim($data['User']['hobby']);
             }
 
             if ($this->User->save($data)) {
                 $this->Session->setFlash('プロフィールを更新しました');
-                return $this->redirect(array('action' => 'profile'));
+                return $this->redirect(['action' => 'profile']);
             } else {
                 $this->Session->setFlash('更新に失敗しました。入力内容を確認してください。');
             }
         } else {
-            $this->request->data = $this->User->read();
+            $this->request->data = $userData;
         }
-
-        $this->set('user', $this->User->read());
     }
+
 
     public function profile_view() {
-        $user = $this->Auth->user();
+        $authUser = $this->Auth->user();
 
-        if (!$user) {
+        if (!$authUser) {
             $this->Session->setFlash('ログインが必要です。');
-            return $this->redirect(array('action' => 'login'));
+            return $this->redirect(['action' => 'login']);
         }
 
-        $this->set('user', $this->User->findById($user['id']));
+        // 最新情報取得
+        $userData = $this->User->findById($authUser['id']);
+        $this->set('user', $userData['User']);
     }
+
 
     public function search() {
         $this->autoRender = false;
@@ -126,5 +137,4 @@ class UsersController extends AppController {
 
         echo json_encode(['results' => $result]);
     }
-
 }

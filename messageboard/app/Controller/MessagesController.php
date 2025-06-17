@@ -5,19 +5,40 @@ class MessagesController extends AppController {
     public function beforeFilter() {
         parent::beforeFilter();
         $this->Security->unlockedActions = ['add', 'delete'];
+
+        $this->Auth->deny();
     }
 
     public function index() {
+        
         $this->Paginator->settings = [
             'limit' => 10,
             'order' => ['Message.created' => 'desc'],
-            'contain' => ['Conversation' => ['order' => ['Conversation.created' => 'asc']]]
+            'contain' => [
+                'User', // ← 投稿者のプロフィール画像用
+                'Conversation' => [
+                    'order' => ['Conversation.created' => 'asc'],
+                    'User' // ← 会話投稿者のプロフィール画像用
+                ]
+            ]
         ];
+        
+        var_dump($this->Paginator->settings = [
+            'limit' => 10,
+            'order' => ['Message.created' => 'desc'],
+            'contain' => ['Conversation' => ['order' => ['Conversation.created' => 'asc']]]
+        ]);
         $this->set('messages', $this->Paginator->paginate('Message'));
+        // ▼ ユーザー情報を取得し、ビューへ渡す（画像含む）
+        $userId = $this->Auth->user('id');
+        $currentUser = $this->Message->User->findById($userId);
+        $this->set('currentUser', $currentUser['User']);
+        $this->set('currentUser', $this->Auth->user()); 
     }
 
     public function add() {
         $this->set('recipient', ['' => '']);
+        $this->set('currentUser', $this->Auth->user()); 
 
         if ($this->request->is('post')) {
             $this->Message->create();
@@ -26,7 +47,8 @@ class MessagesController extends AppController {
 
             if (!empty($data['Message']['recipient_id'])) {
                 $recipient = $this->Message->User->find('first', [
-                    'conditions' => ['User.id' => $data['Message']['recipient_id']],
+                    'co
+                    ditions' => ['User.id' => $data['Message']['recipient_id']],
                     'fields' => ['User.name']
                 ]);
 

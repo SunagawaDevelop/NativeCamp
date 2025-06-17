@@ -27,6 +27,7 @@ class ConversationsController extends AppController {
 
         $this->Conversation->id = $id;
         if (!$this->Conversation->exists()) {
+            
             throw new NotFoundException(__('Invalid conversation'));
         }
 

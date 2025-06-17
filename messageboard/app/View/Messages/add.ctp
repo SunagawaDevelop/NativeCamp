@@ -22,7 +22,9 @@ html, body {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 </style>
-
+<?php if (!empty($currentUser)): ?>
+  <p>現在、アカウント「<strong><?php echo h($currentUser['name']); ?></strong>」 でログイン中</p>
+<?php endif; ?>
 <div class="container">
     <div class="form-wrapper">
         <h2 class="mb-4 text-center">New Message</h2>

@@ -3,17 +3,20 @@
 
         <h2 class="profile-title">Profile</h2>
 
+            <?php if (!empty($user['logindate'])): ?>
+                <p class="last-login">Last Login: <strong><?php echo h($user['logindate']); ?></strong></p>
+            <?php endif; ?>
+
         <?php
         // Profile photo
-        if (!empty($user['User']['photo'])) {
-            echo '<div class="profile-photo">';
-            echo $this->Html->image('/img/' . h($user['User']['photo']), array(
+        if (!empty($user['photo'])) {
+            echo $this->Html->image('/img/' . h($user['photo']), [
                 'alt' => 'Profile Photo',
-                'width' => '150'
-            ));
-            echo '</div>';
+                'width' => '150',
+                'id' => 'preview'
+            ]);
         } else {
-            echo '<p class="no-photo">No profile photo set.</p>';
+            echo '<img id="preview" src="/img/no_image.png" width="150" alt="No Photo" />';
         }
 
         echo '<p><strong>Name: </strong>' . h($user['User']['name']) . '</p>';

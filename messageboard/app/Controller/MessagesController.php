@@ -1,68 +1,91 @@
 <?php
 class MessagesController extends AppController {
+   // public $components = array('RequestHandler');
     public $components = ['Paginator', 'Security'];
 
     public function beforeFilter() {
         parent::beforeFilter();
-        $this->Security->unlockedActions = ['add', 'delete'];
+        $this->Security->unlockedActions = ['delete', 'add'];
     }
 
+    
     public function index() {
         $this->Paginator->settings = [
             'limit' => 10,
             'order' => ['Message.created' => 'desc'],
-            'contain' => ['Conversation' => ['order' => ['Conversation.created' => 'asc']]]
+            'contain' => [
+                'Conversation' => ['order' => ['Conversation.created' => 'asc']]
+            ]
         ];
-        $this->set('messages', $this->Paginator->paginate('Message'));
+
+        $messages = $this->Paginator->paginate('Message');
+        $this->set(compact('messages'));
     }
 
     public function add() {
-        $this->set('recipient', ['' => '']);
+        $this->set('recipient', ['' => '']); // 初期は空でOK
 
         if ($this->request->is('post')) {
             $this->Message->create();
-            $data = $this->request->data;
-            $data['Message']['user_id'] = $this->Auth->user('id');
+            $this->request->data['Message']['user_id'] = $this->Auth->user('id');
 
-            if (!empty($data['Message']['recipient_id'])) {
-                $recipient = $this->Message->User->find('first', [
-                    'conditions' => ['User.id' => $data['Message']['recipient_id']],
+            // recipient_id がある場合はユーザー情報を取得
+            if (!empty($this->request->data['Message']['recipient_id'])) {
+                $this->loadModel('User');
+                $recipient = $this->User->find('first', [
+                    'conditions' => ['User.id' => $this->request->data['Message']['recipient_id']],
                     'fields' => ['User.name']
                 ]);
 
                 if (!empty($recipient)) {
-                    $data['Message']['content'] = 'To: ' . $recipient['User']['name'] . "\n" . $data['Message']['content'];
+                    $recipientName = $recipient['User']['name'];
+                    // メッセージ内容の先頭に「宛先: ユーザー名」を追加
+                    $this->request->data['Message']['content'] = 'To: ' . $recipientName . "\n" . $this->request->data['Message']['content'];
                 }
             }
 
-            if ($this->Message->save($data)) {
+            if ($this->Message->save($this->request->data)) {
                 $this->Session->setFlash('メッセージを投稿しました');
                 return $this->redirect(['action' => 'index']);
+            } else {
+                $this->Session->setFlash('投稿に失敗しました');
             }
-
-            $this->Session->setFlash('投稿に失敗しました');
         }
     }
 
+
     public function delete($id = null) {
-        if (!$this->request->is(['post', 'delete'])) {
+        CakeLog::write('debug', "Delete method called with ID: $id");
+
+        if (!$this->request->is('post') && !$this->request->is('delete')) {
             throw new MethodNotAllowedException();
         }
 
-        if (!$this->Message->exists($id)) {
+        $this->Message->id = $id;
+        if (!$this->Message->exists()) {
             throw new NotFoundException(__('Invalid message'));
         }
 
-        $result = $this->Message->delete($id);
-        CakeLog::write('debug', $result ? "Message $id deleted" : "Failed to delete message $id");
+        if ($this->Message->delete()) {
+            CakeLog::write('debug', "Message $id deleted");
+        } else {
+            CakeLog::write('debug', "Failed to delete message $id");
+        }
 
         if ($this->request->is('ajax')) {
             $this->autoRender = false;
             $this->response->type('json');
-            echo json_encode(['status' => $result ? 'success' : 'error']);
+            echo json_encode(['status' => 'success']);
             return;
         }
 
         return $this->redirect(['action' => 'index']);
-    }
+
+
+        }
+
 }
+
+
+
+

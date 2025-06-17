@@ -13,12 +13,13 @@
             'url' => array('controller' => 'users', 'action' => 'login')
         ));
 
-    
+        // Email 横並び
         echo '<div class="form-row-inline">';
         echo $this->Form->label('email', 'Email', array('class' => 'form-label-inline'));
         echo $this->Form->text('email', array('class' => 'form-input-inline'));
         echo '</div>';
 
+        // Password 横並び
         echo '<div class="form-row-inline">';
         echo $this->Form->label('password', 'Password', array('class' => 'form-label-inline'));
         echo $this->Form->password('password', array('class' => 'form-input-inline'));

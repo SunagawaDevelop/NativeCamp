@@ -74,6 +74,7 @@
     </div>
 </div>
 
+<!-- ページ最下部に配置 -->
 <div class="profile-edit-links">
     <p class="link-line">
         <?php echo $this->Html->link('View Profile', array('controller' => 'users', 'action' => 'profile_view')); ?>

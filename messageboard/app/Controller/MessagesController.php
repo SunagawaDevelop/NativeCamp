@@ -8,31 +8,23 @@ class MessagesController extends AppController {
 
         $this->Auth->deny();
     }
-
+    
     public function index() {
         
-        $this->Paginator->settings = [
-            'limit' => 10,
-            'order' => ['Message.created' => 'desc'],
-            'contain' => [
-                'User', // ← 投稿者のプロフィール画像用
-                'Conversation' => [
-                    'order' => ['Conversation.created' => 'asc'],
-                    'User' // ← 会話投稿者のプロフィール画像用
-                ]
+    $this->Paginator->settings = [
+        'limit' => 10,
+        'order' => ['Message.created' => 'desc'],
+        'contain' => [
+            'User',
+            'Recipient',
+            'Conversation' => [
+                'order' => ['Conversation.created' => 'asc'],
+                'User' 
             ]
-        ];
-        
-        var_dump($this->Paginator->settings = [
-            'limit' => 10,
-            'order' => ['Message.created' => 'desc'],
-            'contain' => ['Conversation' => ['order' => ['Conversation.created' => 'asc']]]
-        ]);
+        ]
+    ];
+
         $this->set('messages', $this->Paginator->paginate('Message'));
-        // ▼ ユーザー情報を取得し、ビューへ渡す（画像含む）
-        $userId = $this->Auth->user('id');
-        $currentUser = $this->Message->User->findById($userId);
-        $this->set('currentUser', $currentUser['User']);
         $this->set('currentUser', $this->Auth->user()); 
     }
 
@@ -47,13 +39,12 @@ class MessagesController extends AppController {
 
             if (!empty($data['Message']['recipient_id'])) {
                 $recipient = $this->Message->User->find('first', [
-                    'co
-                    ditions' => ['User.id' => $data['Message']['recipient_id']],
+                    'conditions' => ['User.id' => $data['Message']['recipient_id']],
                     'fields' => ['User.name']
                 ]);
 
                 if (!empty($recipient)) {
-                    $data['Message']['content'] = 'To: ' . $recipient['User']['name'] . "\n" . $data['Message']['content'];
+                    $data['Message']['content'] = $data['Message']['content'];
                 }
             }
 

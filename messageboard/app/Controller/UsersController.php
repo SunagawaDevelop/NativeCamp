@@ -14,9 +14,10 @@ class UsersController extends AppController {
     $loginResult = '';
 
     if ($this->request->is('post')) {
-        $user = $this->User->find('first', array(
-            'conditions' => array('User.email' => $this->request->data['User']['email'])
-        ));
+        $user = $this->User->find('first', [
+            'conditions' => ['User.email' => $this->request->data['User']['email']],
+            'fields' => ['id', 'name', 'email', 'photo', 'password']
+        ]);
 
         if ($user) {
 
@@ -52,6 +53,8 @@ class UsersController extends AppController {
     }
 
     public function register() {
+        $this->request->data['User']['password_hashed'] = false;
+
         if ($this->request->is('post')) {
             $this->User->create();
 

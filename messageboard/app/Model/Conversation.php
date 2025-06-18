@@ -1,6 +1,6 @@
 <?php
 class Conversation extends AppModel {
-    public $belongsTo = ['Message', 'User'];
+    public $belongsTo = ['User', 'Message'];
 
     public $validate = [
         'content' => [

@@ -1,4 +1,3 @@
-// CSRFトークンの設定
 $.ajaxSetup({
     headers: {
         'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content')
@@ -6,57 +5,55 @@ $.ajaxSetup({
 });
 
 $(function () {
-    // メッセージ削除ボタン
+    // 削除ボタン
     $(document).on('click', '.delete-message', function (e) {
-        e.preventDefault();
+    e.preventDefault();
 
-        var messageId = $(this).data('id');
-        var $messageBox = $('#message-' + messageId);
+    var messageId = $(this).data('id'); // ← これが 20 とか入る
+    var $messageBox = $('#message-' + messageId);
 
-        $.ajax({
-            url: '/messages/' + messageId,
-            type: 'POST',
-            data: {
-                _method: 'DELETE'
-            },
-            success: function (response) {
-                console.log('削除成功', response);
-                $messageBox.remove();
-            },
-            error: function (xhr, status, error) {
-                console.error('削除失敗', error);
-            }
-        });
+    $.ajax({
+        url: '/messages/' + messageId, // ← 動的に変更されていること！
+        type: 'POST',
+        data: {
+            _method: 'DELETE'
+        },
+        success: function(response) {
+            console.log('削除成功', response);
+            $messageBox.remove(); // DOM から削除
+        },
+        error: function(xhr, status, error) {
+            console.error('削除失敗', error);
+        }
     });
+});
 
-    // 返信フォーム送信処理
+
+    // 返信フォーム
     $(document).on('submit', '.reply-form', function (e) {
         e.preventDefault();
-        const form = this;
+        var $form = $(this);
+        var formData = $form.serialize();
 
         $.ajax({
+            url: $form.attr('action'),
             type: 'POST',
-            url: $(form).attr('action'),
-            data: $(form).serialize(),
-            dataType: 'json',
-            success: function (response) {
-                if (response.status === 'success') {
-                    location.reload();
-                } else {
-                    alert('返信の投稿に失敗しました。');
-                }
+            data: formData,
+            success: function () {
+                location.reload(); // 成功後にリロード（理想はDOM追加）
             },
             error: function () {
-                alert('通信エラーが発生しました。');
+                alert('返信に失敗しました。');
             }
         });
     });
 
-    // 「もっと見る」ボタンクリック
+
+        // 「もっと見る」ボタンクリックAdd commentMore actions
     $(document).on('click', '#load-more', function (e) {
         e.preventDefault();
         var page = $(this).data('page');
-
+console.log(page)
         $.ajax({
             url: '/messageboard/messages/index/page/' + page,
             type: 'GET',
@@ -65,7 +62,6 @@ $(function () {
                 var $newMessages = $(html).find('#message-list').html();
                 $('#message-list').append($newMessages);
                 $('#load-more').data('page', page + 1);
-
                 if (!$(html).find('#load-more').length) {
                     $('#load-more').remove();
                 }
@@ -75,4 +71,5 @@ $(function () {
             }
         });
     });
+
 });

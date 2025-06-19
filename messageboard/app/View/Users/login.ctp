@@ -4,37 +4,33 @@
             <label class="form-title">Login</label>
         </div>
 
-        <?php if (!empty($loginResult)): ?>
-            <p class="login-error"><?php echo h($loginResult); ?></p>
-        <?php endif; ?>
+        <?php
+        if (!empty($loginResult)) {
+            echo '<p class="login-error">' . h($loginResult) . '</p>';
+        }
 
-        <?php echo $this->Form->create('User', [
-            'url' => ['controller' => 'users', 'action' => 'login'],
-            'type' => 'post'
-        ]); ?>
+        echo $this->Form->create('User', array(
+            'url' => array('controller' => 'users', 'action' => 'login')
+        ));
+    
+        echo '<div class="form-row-inline">';
+        echo $this->Form->label('email', 'Email', array('class' => 'form-label-inline'));
+        echo $this->Form->text('email', array('class' => 'form-input-inline'));
+        echo '</div>';
 
-        <div class="form-row-inline">
-            <?php
-                echo $this->Form->label('email', 'Email', ['class' => 'form-label-inline']);
-                echo $this->Form->text('email', ['class' => 'form-input-inline']);
-            ?>
-        </div>
+        echo '<div class="form-row-inline">';
+        echo $this->Form->label('password', 'Password', array('class' => 'form-label-inline'));
+        echo $this->Form->password('password', array('class' => 'form-input-inline'));
+        echo '</div>';
 
-        <div class="form-row-inline">
-            <?php
-                echo $this->Form->label('password', 'Password', ['class' => 'form-label-inline']);
-                echo $this->Form->password('password', ['class' => 'form-input-inline']);
-            ?>
-        </div>
+        echo '<div class="form-actions">';
+        echo $this->Form->end(array(
+            'label' => 'Login',
+            'class' => 'btn-login'
+        ));
+        echo '</div>';
+        ?>
 
-        <div class="form-actions">
-            <?php echo $this->Form->submit('Login', ['class' => 'btn-login']); ?>
-        </div>
-
-        <?php echo $this->Form->end(); ?>
-
-        <p class="link-line">
-            <?php echo $this->Html->link('Click here to register', ['controller' => 'users', 'action' => 'register']); ?>
-        </p>
+        <p class="link-line"><?php echo $this->Html->link('Click here to register', array('controller' => 'users', 'action' => 'register')); ?></p>
     </div>
 </div>

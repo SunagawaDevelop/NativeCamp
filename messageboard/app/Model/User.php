@@ -7,19 +7,15 @@ class User extends AppModel {
     public $name = 'User';
 
     public function beforeSave($options = array()) {
-    if (!empty($this->data[$this->alias]['password']) &&
-        (empty($this->data[$this->alias]['password_hashed']) || !$this->data[$this->alias]['password_hashed'])) {
-
-        App::uses('SimplePasswordHasher', 'Controller/Component/Auth');
-        $passwordHasher = new SimplePasswordHasher();
-        $this->data[$this->alias]['password'] = $passwordHasher->hash(
-            $this->data[$this->alias]['password']
-        );
+        if (!empty($this->data[$this->alias]['password'])) {
+            App::uses('SimplePasswordHasher', 'Controller/Component/Auth');
+            $passwordHasher = new SimplePasswordHasher();
+            $this->data[$this->alias]['password'] = $passwordHasher->hash(
+                $this->data[$this->alias]['password']
+            );
+        }
+        return true;
     }
-
-    return true;
-}
-
 
     public $validate = array(
     'name' => array(

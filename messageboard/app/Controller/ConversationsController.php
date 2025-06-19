@@ -1,53 +1,51 @@
 <?php
-class ConversationsController extends AppController {
-        public $components = ['Flash'];
-        
-        public function add() {
-            $this->autoRender = false;
-            $this->response->type('json');
+App::uses('AppController', 'Controller');
 
-            if ($this->request->is('post')) {
-                $this->Conversation->create();
-                $this->request->data['Conversation']['user_id'] = $this->Auth->user('id');
+class ConversationsController extends AppController {
+    public $components = ['RequestHandler'];
+
+    public function beforeFilter() {
+        parent::beforeFilter();
+        $this->Auth->allow('add', 'delete'); // 必要に応じて調整
+    }
+
+    public function add() {
+        $this->autoRender = false;
+        $this->response->type('json');
+
+        if ($this->request->is('post')) {
+            $this->Conversation->create();
+
+            $user = $this->Auth->user(); // 現在のログインユーザー情報を取得
+
+            $this->request->data['Conversation']['user_id'] = $user['id'];
+            $this->request->data['Conversation']['user_photo'] = !empty($user['photo']) ? $user['photo'] : null;
 
             if ($this->Conversation->save($this->request->data)) {
-                $conversationId = $this->Conversation->id;
-
-                // User情報を含めて取得し直す
-                $newConversation = $this->Conversation->find('first', [
-                    'conditions' => ['Conversation.id' => $conversationId],
-                    'contain' => ['User']
-                ]);
-
-                return json_encode([
-                    'status' => 'success',
-                    'conversation' => $newConversation
-                ]);
+                echo json_encode(['status' => 'success']);
+                return;
             } else {
-                    return json_encode(['status' => 'fail']);
-                }
+                echo json_encode(['status' => 'fail']);
+                return;
             }
-
-            return json_encode(['status' => 'invalid']);
-         }
-
-        public function delete($id = null) {
-        if (!$this->request->is('post') && !$this->request->is('delete')) {
-            throw new MethodNotAllowedException();
         }
 
-        $this->Conversation->id = $id;
-        if (!$this->Conversation->exists()) {
-            
-            throw new NotFoundException(__('Invalid conversation'));
+        echo json_encode(['status' => 'invalid']);
+    }
+
+    public function delete($id = null) {
+        $this->autoRender = false;
+        $this->response->type('json');
+
+        if (!$this->request->is(['post', 'delete']) || !$this->Conversation->exists($id)) {
+            echo json_encode(['status' => 'error']);
+            return;
         }
 
-        if ($this->Conversation->delete()) {
-            $this->Session->setFlash(__('返信を削除しました'));
+        if ($this->Conversation->delete($id)) {
+            echo json_encode(['status' => 'success']);
         } else {
-            $this->Session->setFlash(__('返信の削除に失敗しました'));
+            echo json_encode(['status' => 'fail']);
         }
-
-        return $this->redirect($this->referer());
-}
+    }
 }

@@ -14,10 +14,9 @@ class UsersController extends AppController {
     $loginResult = '';
 
     if ($this->request->is('post')) {
-        $user = $this->User->find('first', [
-            'conditions' => ['User.email' => $this->request->data['User']['email']],
-            'fields' => ['id', 'name', 'email', 'photo', 'password']
-        ]);
+        $user = $this->User->find('first', array(
+            'conditions' => array('User.email' => $this->request->data['User']['email'])
+        ));
 
         if ($user) {
 
@@ -43,7 +42,6 @@ class UsersController extends AppController {
     $this->set('loginResult', $loginResult);
 }
 
-
     public function logout() {
         return $this->redirect($this->Auth->logout());
     }
@@ -53,8 +51,6 @@ class UsersController extends AppController {
     }
 
     public function register() {
-        $this->request->data['User']['password_hashed'] = false;
-
         if ($this->request->is('post')) {
             $this->User->create();
 
@@ -72,7 +68,6 @@ class UsersController extends AppController {
         $user = $this->Auth->user();
         $this->User->id = $user['id'];
 
-        // DBから最新のユーザーデータを取得
         $userData = $this->User->read();
         $this->set('user', $userData['User']);
 
@@ -103,7 +98,6 @@ class UsersController extends AppController {
         }
     }
 
-
     public function profile_view() {
         $authUser = $this->Auth->user();
 
@@ -112,11 +106,10 @@ class UsersController extends AppController {
             return $this->redirect(['action' => 'login']);
         }
 
-        // 最新情報取得
+        // User全体の情報をそのまま渡す
         $userData = $this->User->findById($authUser['id']);
-        $this->set('user', $userData['User']);
+        $this->set('user', $userData);
     }
-
 
     public function search() {
         $this->autoRender = false;

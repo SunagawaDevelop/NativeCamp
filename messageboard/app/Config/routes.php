@@ -73,6 +73,9 @@
     array('controller' => 'messages', 'action' => 'add')
 	);
 
+	Router::connect('/messageboard/messages/:action/*', ['controller' => 'messages']);
+
+
 	Router::connect('/users/ajax_photo_upload', array('controller' => 'users', 'action' => 'ajax_photo_upload'));
 
 

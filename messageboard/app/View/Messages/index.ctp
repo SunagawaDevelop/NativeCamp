@@ -1,23 +1,8 @@
 <?php if (isset($csrfToken)): ?>
     <meta name="csrf-token" content="<?php echo h($csrfToken); ?>">
 <?php endif; ?>
-
 <?php if (!empty($currentUser)): ?>
-  <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-    <?php
-      $currentUserPhoto = !empty($currentUser['photo']) 
-        ? '/img/uploads/' . h($currentUser['photo']) 
-        : '/img/no_image.png';
-
-      echo $this->Html->image($currentUserPhoto, [
-          'alt' => 'Current User Photo',
-          'style' => 'width:50px; height:50px; border-radius:50%;'
-      ]);
-    ?>
-    <p style="margin: 0;">
-      現在、アカウント「<strong><?php echo h($currentUser['name']); ?></strong>」 でログイン中
-    </p>
-  </div>
+  <p>現在、アカウント「<strong><?php echo h($currentUser['name']); ?></strong>」 でログイン中</p>
 <?php endif; ?>
 
 <div class="board-container">
@@ -33,10 +18,11 @@
       <?php foreach ($messages as $message): ?>
         <div class="message" id="message-<?php echo $message['Message']['id']; ?>">
           
+          <!-- 送り主の画像と名前 -->
           <div class="sender-info">
             <?php
               $senderPhotoPath = !empty($message['User']['photo']) 
-                  ? '/img/uploads/' . h($message['User']['photo']) 
+                  ? '/img/' . h($message['User']['photo']) 
                   : '/img/no_image.png';
               echo $this->Html->image($senderPhotoPath, [
                   'alt' => 'Sender',
@@ -46,11 +32,12 @@
             <strong><?php echo h($message['User']['name']); ?> さんから</strong>
           </div>
 
+          <!-- 受取人の画像と名前（いる場合のみ） -->
           <?php if (!empty($message['Recipient'])): ?>
             <div class="recipient-info">
               <?php
                 $recipientPhotoPath = !empty($message['Recipient']['photo']) 
-                    ? '/img/uploads/' . h($message['Recipient']['photo']) 
+                    ? '/img/' . h($message['Recipient']['photo']) 
                     : '/img/no_image.png';
                 echo $this->Html->image($recipientPhotoPath, [
                     'alt' => 'Recipient',
@@ -66,26 +53,22 @@
 
           <div class="conversations">
             <?php foreach ($message['Conversation'] as $conversation): ?>
-              <div class="conversation">
-                <!-- 🔽 返信者の画像表示 -->
-                <div class="conversation-sender-info">
-                  <?php
-                    $photoPath = !empty($conversation['User']['photo']) 
-                        ? '/img/uploads/' . h($conversation['User']['photo']) 
-                        : '/img/no_image.png';
-                    echo $this->Html->image($photoPath, [
-                        'alt' => 'User Photo',
-                        'style' => 'width:40px; height:40px; border-radius:50%;'
-                    ]);
-                  ?>
-                  <strong><?php echo h($conversation['User']['name']); ?> さんの返信</strong>
-                </div>
+    <div class="conversation">
+      <?php
+          $replyPhotoPath = !empty($conversation['user_photo']) 
+              ? '/img/' . h($conversation['user_photo']) 
+              : '/img/no_image.png';
 
-                <!-- 返信内容と日時 -->
+          echo $this->Html->image($replyPhotoPath, [
+              'alt' => 'Reply User',
+              'style' => 'width:30px; height:30px; border-radius:50%;'
+          ]);
+      ?>
+      <p><?php echo h($conversation['content']); ?></p>
+      <p><small><?php echo h($conversation['created']); ?></small></p>
                 <p><?php echo h($conversation['content']); ?></p>
                 <p><small><?php echo h($conversation['created']); ?></small></p>
 
-                <!-- 削除フォーム -->
                 <?php
                   echo $this->Form->create('Conversation', [
                       'url' => ['controller' => 'conversations', 'action' => 'delete', $conversation['id']],
@@ -93,14 +76,13 @@
                       'style' => 'display:inline-block;',
                       'onsubmit' => 'return confirm("Are you sure you want to delete this?");'
                   ]);
-                  echo $this->Form->submit('Delete', ['class' => 'btn-default']);
+                  echo $this->Form->submit('Delete', ['style' => 'background:#fff; color:#000; border:1px solid #000;']);
                   echo $this->Form->end();
                 ?>
               </div>
             <?php endforeach; ?>
           </div>
 
-          <!-- メッセージ削除 -->
           <?php
             echo $this->Form->create('Message', [
                 'url' => ['controller' => 'messages', 'action' => 'delete', $message['Message']['id']],
@@ -108,11 +90,10 @@
                 'style' => 'display:inline-block;',
                 'onsubmit' => 'return confirm("This message and all its replies will be deleted. Are you sure?");'
             ]);
-            echo $this->Form->submit('Delete Message', ['class' => 'btn-default']);
+            echo $this->Form->submit('Delete Message', ['style' => 'background:#fff; color:#000; border:1px solid #000;']);
             echo $this->Form->end();
           ?>
 
-          <!-- 返信フォーム -->
           <?php
             echo $this->Form->create('Conversation', [
                 'url' => ['controller' => 'conversations', 'action' => 'add'],
@@ -122,10 +103,9 @@
             echo $this->Form->control('content', [
                 'label' => false,
                 'placeholder' => 'Write a reply...',
-                'style' => 'color:#000; background:#fff; border:1px solid #000;',
-                'rows' => 2
+                'style' => 'color:#000; background:#fff; border:1px solid #000;'
             ]);
-            echo $this->Form->submit('Reply', ['class' => 'btn-default']);
+            echo $this->Form->submit('Reply', ['style' => 'background:#fff; color:#000; border:1px solid #000;']);
             echo $this->Form->end();
           ?>
         </div>
@@ -140,18 +120,3 @@
 </div>
 
 <?php echo $this->Html->script('board'); ?>
-
-<!-- 推奨：共通ボタンクラス -->
-<style>
-  .btn-default {
-    background: #fff;
-    color: #000;
-    border: 1px solid #000;
-    padding: 4px 8px;
-    cursor: pointer;
-  }
-
-  .btn-default:hover {
-    background: #f0f0f0;
-  }
-</style>

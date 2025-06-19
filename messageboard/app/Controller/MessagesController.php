@@ -8,22 +8,18 @@ class MessagesController extends AppController {
 
         $this->Auth->deny();
     }
-    
+
     public function index() {
         
-    $this->Paginator->settings = [
-        'limit' => 10,
-        'order' => ['Message.created' => 'desc'],
-        'contain' => [
-            'User',
-            'Recipient',
-            'Conversation' => [
-                'order' => ['Conversation.created' => 'asc'],
-                'User' 
+        $this->Paginator->settings = [
+            'limit' => 10,
+            'order' => ['Message.created' => 'desc'],
+            'contain' => [
+                'User',
+                'Recipient',
+                'Conversation' => ['order' => ['Conversation.created' => 'asc']]
             ]
-        ]
-    ];
-
+        ];
         $this->set('messages', $this->Paginator->paginate('Message'));
         $this->set('currentUser', $this->Auth->user()); 
     }

@@ -164,7 +164,6 @@ public function profile() {
         echo json_encode(['results' => $result]);
     }
 
-    // UsersController.php
   public function upload_photo($id = null) {
     $this->autoRender = false;
     $this->response->type('json');
@@ -212,8 +211,4 @@ public function profile() {
 
     echo json_encode(['success' => false, 'message' => '画像を選択してください']);
 }
-
-
-
-
 }

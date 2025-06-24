@@ -84,30 +84,6 @@ public function profile() {
             $data = $this->request->data;
             $formType = isset($data['User']['form_type']) ? $data['User']['form_type'] : '';
 
-            if ($formType === 'photo') {
-                if (!empty($data['User']['photo']['name'])) {
-                    $ext = pathinfo($data['User']['photo']['name'], PATHINFO_EXTENSION);
-                    $allowed = ['jpg', 'jpeg', 'png', 'gif'];
-
-                    if (!in_array(strtolower($ext), $allowed)) {
-                        $this->Session->setFlash('画像ファイル(jpg, png, gif)を選択してください');
-                    } else {
-                        $filename = time() . '_' . basename($data['User']['photo']['name']);
-                        $path = WWW_ROOT . 'img' . DS . 'uploads' . DS . $filename;
-
-                        if (move_uploaded_file($data['User']['photo']['tmp_name'], $path)) {
-                            $this->User->saveField('photo', 'uploads/' . $filename);
-                            $this->Session->setFlash('プロフィール画像を更新しました');
-                            return $this->redirect(['action' => 'profile']);
-                        } else {
-                            $this->Session->setFlash('画像の保存に失敗しました');
-                        }
-                    }
-                } else {
-                    $this->Session->setFlash('画像を選択してください');
-                }
-            }
-
             if ($formType === 'profile') {
                 if (isset($data['User']['hobby'])) {
                     $data['User']['hobby'] = trim($data['User']['hobby']);

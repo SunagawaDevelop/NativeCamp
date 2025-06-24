@@ -99,8 +99,7 @@ $(function () {
             const formData = new FormData();
             formData.append('User[photo]', file);
 
-            // プロフィール編集画面にいると仮定して userId を取得
-            const userId = $('#upload-btn').data('userid'); // data-userid 属性が必要！
+            const userId = $('#upload-btn').data('userid');
 
             $.ajax({
                 url: '/messageboard/users/upload_photo/' + userId,
@@ -171,16 +170,13 @@ $(function () {
                     $('#photo-error').text('');
                     alert(result.message);
                     $('#preview').attr('src', '/messageboard/img/' + result.photo);
-
                 } else {
                     $('#photo-error').text(result.message);
                 }
             },
             error: function () {
                 $('#photo-error').text(result.message);
-               // $('#photo-error').text('sunagawa');
             }
         });
     });
 });
-

@@ -1,17 +1,32 @@
 <?php
-App::uses('AppModel', 'Model');
-
 class Message extends AppModel {
-    public $hasMany = array(
-        'Conversation' => array(
+    public $hasMany = [
+        'Conversation' => [
+            'className' => 'Conversation',
+            'foreignKey' => 'message_id',
             'dependent' => true
-        )
-    );
+        ]
+    ];
 
-    public $validate = array(
-        'content' => array(
+    public $belongsTo = [
+        'User' => [
+            'className' => 'User',
+            'foreignKey' => 'user_id'
+        ],
+        'Recipient' => [
+            'className' => 'User',
+            'foreignKey' => 'recipient_id'
+        ]
+    ];
+
+    public $validate = [
+        'content' => [
             'rule' => 'notBlank',
-            'message' => '内容を入力してください'
-        )
-    );
+            'message' => 'メッセージ内容を入力してください'
+        ],
+        'recipient_id' => [
+            'rule' => 'numeric',
+            'message' => '受信者が不正です'
+        ]
+    ];
 }

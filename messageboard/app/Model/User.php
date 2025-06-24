@@ -6,6 +6,17 @@ App::uses('AppModel', 'Model');
 class User extends AppModel {
     public $name = 'User';
 
+    public function beforeSave($options = array()) {
+        if (!empty($this->data[$this->alias]['password'])) {
+            App::uses('SimplePasswordHasher', 'Controller/Component/Auth');
+            $passwordHasher = new SimplePasswordHasher();
+            $this->data[$this->alias]['password'] = $passwordHasher->hash(
+                $this->data[$this->alias]['password']
+            );
+        }
+        return true;
+    }
+
     public $validate = array(
     'name' => array(
         'rule' => array('between', 5, 20),
@@ -47,7 +58,6 @@ class User extends AppModel {
     )
 );
 
-    // 仮想フィールドのためDBには存在しない
     public $virtualFields = array();
 
     public function validatePasswordConfirm($data) {
